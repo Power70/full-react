@@ -1,6 +1,52 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import StarRating from "./StarRating"
 
+const tempMovieData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt0133093",
+    Title: "The Matrix",
+    Year: "1999",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt6751668",
+    Title: "Parasite",
+    Year: "2019",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+  },
+];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -10,18 +56,9 @@ const average = (arr) =>
   export default function App() {
     const [query, setQuery] = useState("");
     const [movies, setMovies] = useState([]);
+    const [watched, setWatched] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-
-    // const [watched, setWatched] = useState([]);
-    const [watched, setWatched] = useState(
-      function(){
-        const storeValue = localStorage.getItem('watched');
-        return JSON.parse(storeValue);
-      }
-    );
-
-
     // a new state that enable user to see details of selected movies
     const [selectedId, setSelectedId] = useState(null)
 
@@ -37,22 +74,13 @@ const average = (arr) =>
     function handleAddWatched(movie){
       // call setwatch pass in the current watched movie array and create a new one based on that one
       setWatched((watched) =>[...watched, movie]);
-
-      // storing watched movies in a local storage
-      // the way to use localStorage is by calling it
-      // in localStorage we can only store key value pairs which is a string using json.stringify
-      // localStorage.setItem('watched', JSON.stringify([...watched, movie]));
     }
 
     function handleDeleteWatched(id){
       setWatched((watched) => watched.filter((movie) => movie.imdbID !==id));
     }
 
-    // method 2 : to store data in in localStorage
-    useEffect(function(){
-      localStorage.setItem('watched', JSON.stringify(watched));
     
-    }, [watched])
 
     useEffect(function(){
 
@@ -190,24 +218,6 @@ const average = (arr) =>
   }
 
   function Search({query, setQuery}){
-    // To create a focus element on the search bar use the useRef
-
-    const inputEl = useRef(null);
-
-    useEffect(function(){
-      // to listen for a enter key press to automatically focus we use the document and a function name callback
-      function callback(e){
-        // To prevent deletion of focus text when the enter key is pressed use the activeEle method
-        if(document.activeElement === inputEl.current) return;
-
-        if(e.code === "Enter"){
-          inputEl.current.focus();
-          setQuery("")
-        }
-      }
-      document.addEventListener("keydown", callback);
-      return () => document.addEventListener("keydown", callback);
-    }, [setQuery]);
     
     return(
       <input
@@ -216,7 +226,6 @@ const average = (arr) =>
           placeholder="Search movies..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          ref={inputEl}
         />
     );
   }
@@ -311,13 +320,6 @@ const average = (arr) =>
     const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
     const watchedUserRating = watched.find((movie) => movie.imdbID === selectedId)?.userRating
 
-    // Let say we want to check how many times a user click on the like button before coming to a final conclustion behind the scene
-    const countRef = useRef(0);
-
-    useEffect(function(){
-      if(userRating) countRef.current = countRef.current  + 1;
-    }, [userRating]);
-
 
     const {
       Title: title, 
@@ -340,7 +342,6 @@ const average = (arr) =>
           imdbRating: Number(imdbRating),
           runtime: Number(runtime.split(" ").at(0)),
           userRating,
-          countRatingDecision: countRef.current,
         };
         onAddWatched(newWatchedMovie);
         onCloseMovie();
