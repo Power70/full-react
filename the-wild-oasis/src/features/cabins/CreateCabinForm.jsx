@@ -33,7 +33,7 @@ function CreateCabinForm() {
 
   function onSubmit(data) {
     // call mutate function to  update supabase
-    mutate(data);
+    mutate({...data, image: data.image[0]});
   }
   function onError(errors) {
     // console.log(errors)
@@ -106,11 +106,15 @@ function CreateCabinForm() {
             })}
         />
       </FormRow>
-
+ 
       <FormRow label="Cabin photo">
         <FileInput 
           id="image" 
-          accept="image/*" 
+          accept="image/*"
+          type="file"
+          {...register("image", {
+            required: "This field is required"
+            })} 
         /> 
       </FormRow>
 
