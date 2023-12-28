@@ -13,18 +13,34 @@ export async function getCabins() {
     return data;
 }
 
-export async function CreateCabin(newCabin){
+// To know we are in edit session we need to pass in the newCabin and the edit id
+export async function CreateEditCabin(newCabin, id){
+    console.log(newCabin, id)
+    // create a new variable to check what kind of image it is
+    // i.e if the image start with the supabase Url
+    const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
+
     const imageName = `
         ${Math.random()}-${newCabin.image.name}`.replaceAll("/", "");
     
-    const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`
+    const imagePath = hasImagePath ? newCabin.image : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`
     // https://nmymghgzjjijjeqivblj.supabase.co/cabin-001.jpg?t=2023-12-21T09%3A33%3A28.496Z
-    // 1. create cabin
 
-    const { data, error } = await supabase
-        .from('cabins')
-        .insert([{...newCabin, image: imagePath }])
-        .select();
+    // 1. create/edit cabin
+    // We want to create a cabin here only if there is no id
+    let query = supabase.from("cabins");
+
+    // A) Create
+    if(!id) query = query.insert([{...newCabin, image: 
+        imagePath }]);
+
+    // B) Edit
+    if(id) query = query.update({ ...newCabin, image: 
+        imagePath})
+    .eq('id', id);
+        
+        const { data, error } = await query.select().single();
+ 
     if(error) {
         console.error(error);
         throw new Error("cabin could not be created");
