@@ -10,8 +10,10 @@ import Settings from "./pages/Settings";
 import Account from "./pages/Account";
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
+import ProtectedRoute from "./ui/ProtectedRoute";
 import AppLayout from "./ui/AppLayout";
 import { Toaster } from "react-hot-toast";
+
 
 
 const queryClient = new QueryClient({
@@ -29,7 +31,11 @@ function App() {
       <GlobalStyles />
         <BrowserRouter>
           <Routes>
-            <Route element={<AppLayout />} >
+            <Route element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            } >
               <Route index element={<Navigate replace to="dashboard" />}/>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="bookings" element={<Bookings />} />
